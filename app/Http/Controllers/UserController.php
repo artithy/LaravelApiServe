@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Token;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -37,17 +38,20 @@ class UserController extends Controller
             ], 500);
         }
 
-        $tokenString = bin2hex(random_bytes(32));
-        $token = Token::create([
-            'token' => $tokenString,
-            'user_id' => $user->id,
-            'is_active' => 1,
-        ]);
+        $secretKey = env('SECRET_KEY');
+        $payload = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'iat' => time(),
+            'exp' => time() + 3600,
+        ];
+
+        $jwt = JWT::encode($payload, $secretKey, 'HS256');
 
         return response()->json([
             'message' => 'User created successfully',
             'user' => $user,
-            'token' => $token->token,
+            'token' => $jwt,
         ], 201);
     }
 
@@ -71,16 +75,17 @@ class UserController extends Controller
                 'message' => 'Password is incorrect',
             ]);
         }
+        $secretKey = env('SECRET_KEY');
+        $payload = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'iat' => time(),
+            'exp' => time() + 3600,
+        ];
 
-        $tokenString = bin2hex(random_bytes(32));
+        $jwt = JWT::encode($payload, $secretKey, 'HS256');
 
-        $token = Token::create([
-            'token' => $tokenString,
-            'user_id' => $user->id,
-            'is_active' => 1,
-        ]);
-
-        if (!$token) {
+        if (!$jwt) {
             return response()->json([
                 'message' => 'token generation failed',
             ]);
@@ -89,14 +94,14 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Login successful',
             'user' => $user,
-            'token' => $token->token,
+            'token' => $jwt,
         ]);
     }
 
     public function dashboard(Request $request)
     {
-        $token = $request->attributes->get('token');
-        $user = User::find($token->user_id);
+        $token = $request->attributes->get('auth_user');
+        $user = User::find($token['id']);
 
         return response()->json([
             'message' => 'Welcome to dashboard',

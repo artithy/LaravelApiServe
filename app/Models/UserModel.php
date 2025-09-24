@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
-use Doctrine\Common\Lexer\Token;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class UserModel extends Model
+class User extends Authenticatable
 {
-    use HasFactory;
-    protected $fillable = ['name', 'email', 'password'];
-    protected $hidden = ['password'];
+    use HasApiTokens, Notifiable;
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
 
-    public function token()
-    {
-        return $this->hasMany(Token::class);
-    }
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 }

@@ -21,6 +21,13 @@
     },
     "require": {
         "laravel/framework": "^12.30",
-        "laravel/sanctum": "^4.0"
+        "laravel/sanctum": "^4.0",
+        "laravel/passport": "^13.2",
+        "firebase/php-jwt": "^6.11"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }

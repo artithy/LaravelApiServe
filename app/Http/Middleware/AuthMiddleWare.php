@@ -3,7 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\Token;
+use Firebase\JWT\Key;
+use Exception;
+use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,15 +18,31 @@ class AuthMiddleWare
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $tokenString = $request->bearerToken();
-        $token = Token::where('token', $tokenString)->where('is_active', 1)->first();
-        if (!$token) {
+        $authHeader = $request->header('authorization');
+        if (!$authHeader) {
             return response()->json([
-                'message' => 'Invalid or missing token',
+                'message' => 'Token is not provided'
             ], 401);
         }
+        $token = substr($authHeader, 7);
+        $secretKey = env('SECRET_KEY');
 
-        $request->attributes->set('token', $token);
+        try {
+            $decode = JWT::decode($token, new Key($secretKey, 'HS256'));
+            if (!isset($decode->exp) || $decode->exp < time()) {
+                return response([
+                    'message' => 'Token expired'
+                ], 401);
+            }
+            $request->attributes->set('auth_user', [
+                'id' => $decode->id,
+                'name' => $decode->name
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Invalid token'
+            ], 401);
+        }
         return $next($request);
     }
 }
