@@ -14,4 +14,5 @@ Route::post('/login', [UserController::class, 'login']);
 
 Route::middleware([AuthMiddleWare::class])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
+    Route::post('/logout', [UserController::class, 'logout']);
 });

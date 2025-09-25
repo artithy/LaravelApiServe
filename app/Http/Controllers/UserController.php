@@ -108,4 +108,12 @@ class UserController extends Controller
             'user' => $user,
         ]);
     }
+
+    public function logout(Request $request)
+    {
+        $request->attributes->remove('auth_user');
+        return response()->json([
+            'message' => 'Logout successful',
+        ]);
+    }
 }
