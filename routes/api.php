@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CuisineController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -11,8 +12,11 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+Route::get('/cuisines', [CuisineController::class, 'getAllCuisine']);
+Route::get('/cuisines/{id}', [CuisineController::class, 'getSingleCuisine']);
 
 Route::middleware([AuthMiddleWare::class])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
     Route::post('/logout', [UserController::class, 'logout']);
+    Route::post('/cuisine', [CuisineController::class, 'addNewCuisine']);
 });
